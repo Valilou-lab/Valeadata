@@ -24,16 +24,38 @@ const initialState: FormState = {
 const fieldClass =
   "mt-1.5 w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted/60 focus:border-violet focus:ring-2 focus:ring-violet/20";
 
+function digitsOnly(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function isValidPhone(value: string) {
+  return /^\d{10}$/.test(digitsOnly(value));
+}
+
 export function ContactForm({ className }: { className?: string }) {
   const [form, setForm] = useState<FormState>(initialState);
   const [status, setStatus] = useState<"idle" | "submitted">("idle");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handlePhoneChange(value: string) {
+    const next = digitsOnly(value).slice(0, 10);
+    update("telephone", next);
+    if (phoneError && isValidPhone(next)) setPhoneError(null);
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!isValidPhone(form.telephone)) {
+      setPhoneError("Le téléphone doit contenir exactement 10 chiffres.");
+      return;
+    }
+
+    setPhoneError(null);
     // Ready for API / webhook wiring later
     console.info("[contact-form]", form);
     setStatus("submitted");
@@ -78,11 +100,34 @@ export function ContactForm({ className }: { className?: string }) {
             required
             name="telephone"
             type="tel"
+            inputMode="numeric"
             autoComplete="tel"
+            pattern="[0-9]{10}"
+            maxLength={10}
+            minLength={10}
+            placeholder="06XXXXXXXX"
             value={form.telephone}
-            onChange={(e) => update("telephone", e.target.value)}
-            className={fieldClass}
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            aria-invalid={phoneError ? true : undefined}
+            aria-describedby={phoneError ? "telephone-error" : undefined}
+            className={cn(
+              fieldClass,
+              phoneError && "border-red-400 focus:border-red-400 focus:ring-red-200",
+            )}
           />
+          {phoneError ? (
+            <span
+              id="telephone-error"
+              className="mt-1.5 block text-[11px] font-medium normal-case tracking-normal text-red-600"
+              role="alert"
+            >
+              {phoneError}
+            </span>
+          ) : (
+            <span className="mt-1.5 block text-[11px] font-medium normal-case tracking-normal text-muted">
+              10 chiffres obligatoires
+            </span>
+          )}
         </label>
         <label className="block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
           Email
