@@ -6,8 +6,8 @@ import {
   DEFAULT_SUGGESTIONS,
   createFreshChatContext,
   createMessage,
-  processUserMessage,
   type ChatMessage,
+  type ChatbotReply,
   type ConversationState,
   type LeadFields,
 } from "@/lib/chatbot";
@@ -19,7 +19,7 @@ type ChatbotProps = {
 
 /**
  * Conteneur logique du chatbot Leo.
- * Conserve le design via ChatWindow ; la logique vit dans /lib/chatbot.
+ * Les réponses live passent par POST /api/chat (OpenAI côté serveur).
  */
 export function Chatbot({ compact = false, className }: ChatbotProps) {
   const [context] = useState(() => createFreshChatContext());
@@ -42,12 +42,23 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
     }
   }, [pendingLeadCapture]);
 
+  const pushAssistant = useCallback(
+    (content: string, showLead?: boolean) => {
+      const assistantMessage = createMessage("assistant", content);
+      setMessages((prev) => [...prev, assistantMessage]);
+      setTypingMessageId(assistantMessage.id);
+      if (showLead) setPendingLeadCapture(true);
+    },
+    [],
+  );
+
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || isBusy) return;
 
       const userMessage = createMessage("user", trimmed);
+      const historySnapshot = messages;
 
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
@@ -55,29 +66,44 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
       setShowLeadCapture(false);
 
       try {
-        const reply = await processUserMessage(trimmed, {
-          history: messages,
-          state,
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: trimmed,
+            history: historySnapshot,
+            state,
+          }),
         });
 
-        setState(reply.state);
+        const payload = (await response.json()) as ChatbotReply & {
+          error?: string;
+        };
 
-        if (reply.message) {
-          const assistantMessage = createMessage("assistant", reply.message);
-          setMessages((prev) => [...prev, assistantMessage]);
-          setTypingMessageId(assistantMessage.id);
-          if (reply.showLeadCapture) setPendingLeadCapture(true);
-          // isBusy reste true jusqu'à la fin du typewriter
+        if (!response.ok) {
+          pushAssistant(
+            payload.error ??
+              "Je n'ai pas pu répondre pour le moment. Réessayez dans un instant, ou écrivez à contact@valeadata.com.",
+          );
+          return;
+        }
+
+        setState(payload.state);
+
+        if (payload.message) {
+          pushAssistant(payload.message, payload.showLeadCapture);
           return;
         }
 
         setIsBusy(false);
-        if (reply.showLeadCapture) setShowLeadCapture(true);
+        if (payload.showLeadCapture) setShowLeadCapture(true);
       } catch {
-        setIsBusy(false);
+        pushAssistant(
+          "Petit souci de connexion de mon côté. Réessayez dans un instant — ou contactez contact@valeadata.com.",
+        );
       }
     },
-    [isBusy, messages, state],
+    [isBusy, messages, pushAssistant, state],
   );
 
   function handleLeadSubmit(lead: LeadFields) {

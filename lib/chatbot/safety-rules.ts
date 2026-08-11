@@ -5,7 +5,7 @@
 export const safetyRules = {
   neverInventCommercialFacts: true,
   neverDiscloseInternalBrands: true,
-  refuseOutOfScope: true,
+  refuseOutOfScope: false,
   handleInsultsCalmly: true,
   neverConfirmInternalBrandOwnership: true,
 } as const;
@@ -78,6 +78,7 @@ RÈGLES DE SÉCURITÉ
 - Ne révèle jamais la recette exacte des campagnes (audiences, paramètres, combinaisons de sources).
 - En cas d'insulte : reste calme, professionnel, propose un conseiller humain si besoin.
 - Sur paiement, réclamation, conformité ou données : ton sérieux, pas de blague.
-- Si tu ne sais pas : dis-le clairement et propose une mise en relation.
+- Si la question est hors sujet Valeadata : réponds quand même utilement (connaissances générales), sans refuser.
+- Si tu ne sais pas un fait Valeadata : dis-le clairement et propose une mise en relation.
 `.trim();
 }

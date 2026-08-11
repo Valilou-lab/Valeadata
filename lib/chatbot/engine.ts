@@ -36,7 +36,7 @@ export const DEFAULT_SUGGESTIONS = [
 export const WELCOME_MESSAGE =
   "Bonjour 👋 Je suis Leo, votre conseillère Valeadata.\nQuelle verticale souhaitez-vous explorer — mutuelle, solaire, rénovation, énergie… ?";
 
-/** Réponses mock locales — remplacées par le LLM plus tard */
+/** Réponses du plan de base pour les suggestions d'accueil */
 const MOCK_REPLIES: Record<string, string> = {
   "Je veux des leads en rénovation énergétique":
     "Oui, rénovation c'est une verticale que nous pouvons travailler — actuellement plutôt en exclusivité. Vous cherchez plutôt une campagne nationale ou certaines zones ?",
@@ -46,8 +46,29 @@ const MOCK_REPLIES: Record<string, string> = {
     "Nous n'imposons pas le même minimum à tout le monde. Le volume de test recommandé dépend de la verticale et du type de lead — l'idée, c'est d'avoir assez de données pour juger vraiment la performance. Vous souhaitez tester quelle verticale ?",
 };
 
+const COMMERCIAL_INTENT =
+  /lead|prospect|campagne|volume|opt-?in|mutuelle|solaire|r[eé]novation|acquisition|crm|devis|tarif|verticale|valeadata|sms|consentement|exclusivit/i;
+
+function hasCommercialContext(
+  text: string,
+  state: ConversationState,
+): boolean {
+  if (state.collectedFields.length > 0) return true;
+  if (
+    state.lead.verticale ||
+    state.lead.besoin ||
+    state.lead.email ||
+    state.lead.societe ||
+    state.lead.prenom
+  ) {
+    return true;
+  }
+  return COMMERCIAL_INTENT.test(text);
+}
+
 /**
- * Provider mock synchrone/async — même contrat qu'un futur OpenAIProvider.
+ * Provider mock — fallback si l'IA live n'est pas configurée.
+ * Même contrat que openaiChatProvider.
  */
 export const mockChatProvider: ChatModelProvider = {
   async generateReply({ messages }) {
@@ -60,7 +81,7 @@ export const mockChatProvider: ChatModelProvider = {
   },
 };
 
-/** Instance active — à remplacer par OpenAIProvider quand prêt */
+/** Instance active — OpenAI côté /api/chat, mock en secours */
 let activeProvider: ChatModelProvider = mockChatProvider;
 
 export function setChatModelProvider(provider: ChatModelProvider) {
@@ -91,7 +112,7 @@ export function getFullSystemPrompt(): string {
 
 /**
  * Point d'entrée unique pour traiter un message utilisateur.
- * Applique safety → state → (mock/LLM) → qualification.
+ * Plan de base : safety → state → (réponses suggestions / LLM) → qualification.
  */
 export async function processUserMessage(
   userText: string,
@@ -120,6 +141,11 @@ export async function processUserMessage(
     return { message: getConfidentialResponse(), state };
   }
 
+  // Suggestions d'accueil : réponses exactes du plan de base
+  if (MOCK_REPLIES[trimmed]) {
+    return { message: MOCK_REPLIES[trimmed], state };
+  }
+
   const history: ChatMessage[] = [
     ...context.history,
     createMessage("user", trimmed),
@@ -134,8 +160,8 @@ export async function processUserMessage(
 
   let message = content;
 
-  // Si le mock n'a pas de réponse dédiée et qu'il manque des infos, poser la prochaine question
-  if (!MOCK_REPLIES[trimmed]) {
+  // Qualification progressive (plan de base) — uniquement en contexte commercial
+  if (hasCommercialContext(trimmed, state)) {
     const nextField = getNextFieldToAsk(state);
     if (nextField && state.phase !== "closed") {
       state = markFieldAsked(state, nextField);
@@ -152,7 +178,6 @@ export async function processUserMessage(
     };
   }
 
-  // Garde-fou anti-invention côté moteur local
   if (/€\s*\d|\d+\s*€|tarif exact|prix fixe/i.test(trimmed) && !message) {
     message = getUnknownFactResponse();
   }
