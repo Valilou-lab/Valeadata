@@ -140,7 +140,7 @@ export default function SolutionsPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-20 sm:px-6 lg:px-8">
+      <section id="offre" className="scroll-mt-24 bg-white px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <SectionHeading
             eyebrow="CE QUE VOUS OBTENEZ"

@@ -27,9 +27,20 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
   const [state, setState] = useState<ConversationState>(context.state);
   const [input, setInput] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+  const [pendingLeadCapture, setPendingLeadCapture] = useState(false);
   const [showLeadCapture, setShowLeadCapture] = useState(false);
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
+
+  const handleTypingComplete = useCallback(() => {
+    setTypingMessageId(null);
+    setIsBusy(false);
+    if (pendingLeadCapture) {
+      setShowLeadCapture(true);
+      setPendingLeadCapture(false);
+    }
+  }, [pendingLeadCapture]);
 
   const send = useCallback(
     async (text: string) => {
@@ -37,11 +48,11 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
       if (!trimmed || isBusy) return;
 
       const userMessage = createMessage("user", trimmed);
-      const historyForEngine = [...messages, userMessage];
 
-      setMessages(historyForEngine);
+      setMessages((prev) => [...prev, userMessage]);
       setInput("");
       setIsBusy(true);
+      setShowLeadCapture(false);
 
       try {
         const reply = await processUserMessage(trimmed, {
@@ -49,15 +60,20 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
           state,
         });
 
-        if (reply.message) {
-          setMessages((prev) => [
-            ...prev,
-            createMessage("assistant", reply.message),
-          ]);
-        }
         setState(reply.state);
+
+        if (reply.message) {
+          const assistantMessage = createMessage("assistant", reply.message);
+          setMessages((prev) => [...prev, assistantMessage]);
+          setTypingMessageId(assistantMessage.id);
+          if (reply.showLeadCapture) setPendingLeadCapture(true);
+          // isBusy reste true jusqu'à la fin du typewriter
+          return;
+        }
+
+        setIsBusy(false);
         if (reply.showLeadCapture) setShowLeadCapture(true);
-      } finally {
+      } catch {
         setIsBusy(false);
       }
     },
@@ -71,13 +87,14 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
       phase: "handoff",
     }));
     setShowLeadCapture(false);
-    setMessages((prev) => [
-      ...prev,
-      createMessage(
-        "assistant",
-        `Merci${lead.prenom ? ` ${lead.prenom}` : ""} ! Un conseiller Valeadata vous rappelle rapidement.`,
-      ),
-    ]);
+    setIsBusy(true);
+
+    const thanks = createMessage(
+      "assistant",
+      `Merci${lead.prenom ? ` ${lead.prenom}` : ""} ! Un conseiller Valeadata vous rappelle rapidement.`,
+    );
+    setMessages((prev) => [...prev, thanks]);
+    setTypingMessageId(thanks.id);
   }
 
   return (
@@ -87,11 +104,13 @@ export function Chatbot({ compact = false, className }: ChatbotProps) {
       onInputChange={setInput}
       onSend={send}
       suggestions={[...DEFAULT_SUGGESTIONS]}
-      showSuggestions={userMessageCount === 0}
+      showSuggestions={userMessageCount === 0 && !isBusy}
       showLeadCapture={showLeadCapture}
       leadDraft={state.lead}
       onLeadSubmit={handleLeadSubmit}
       isBusy={isBusy}
+      typingMessageId={typingMessageId}
+      onTypingComplete={handleTypingComplete}
       compact={compact}
       className={className}
     />

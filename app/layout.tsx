@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { FloatingChat } from "@/components/FloatingChat";
 import { Header } from "@/components/Header";
+import { CookieConsentManager } from "@/components/cookies/CookieConsentManager";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -32,6 +33,7 @@ export default function RootLayout({
         <div className="flex-1">{children}</div>
         <Footer />
         <FloatingChat />
+        <CookieConsentManager />
       </body>
     </html>
   );

@@ -17,6 +17,9 @@ type ChatWindowProps = {
   leadDraft?: Partial<LeadFields>;
   onLeadSubmit?: (lead: LeadFields) => void;
   isBusy?: boolean;
+  /** ID du message assistant en cours de frappe */
+  typingMessageId?: string | null;
+  onTypingComplete?: () => void;
   compact?: boolean;
   className?: string;
 };
@@ -32,6 +35,8 @@ export function ChatWindow({
   leadDraft,
   onLeadSubmit,
   isBusy = false,
+  typingMessageId = null,
+  onTypingComplete,
   compact = false,
   className,
 }: ChatWindowProps) {
@@ -59,13 +64,21 @@ export function ChatWindow({
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-[#fbfbfe] p-4 sm:p-5">
         {messages
           .filter((m) => m.role === "assistant" || m.role === "user")
-          .map((message) => (
-            <ChatMessage
-              key={message.id}
-              role={message.role as "assistant" | "user"}
-              content={message.content}
-            />
-          ))}
+          .map((message) => {
+            const isTyping =
+              message.role === "assistant" && message.id === typingMessageId;
+
+            return (
+              <ChatMessage
+                key={message.id}
+                role={message.role as "assistant" | "user"}
+                content={message.content}
+                animate={isTyping}
+                delayMs={1000}
+                onTypingComplete={isTyping ? onTypingComplete : undefined}
+              />
+            );
+          })}
 
         {showSuggestions && suggestions.length > 0 ? (
           <div className="mt-auto flex flex-col gap-2 pt-2">
@@ -83,7 +96,7 @@ export function ChatWindow({
           </div>
         ) : null}
 
-        {showLeadCapture ? (
+        {showLeadCapture && !typingMessageId ? (
           <LeadCapture
             initial={leadDraft}
             onSubmit={onLeadSubmit}

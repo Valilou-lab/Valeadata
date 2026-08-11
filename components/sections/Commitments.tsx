@@ -55,7 +55,7 @@ const commitments: Commitment[] = [
 
 export function Commitments() {
   return (
-    <section className="bg-background px-4 pt-8 pb-16 sm:px-6 sm:pt-10 sm:pb-20 lg:px-8">
+    <section className="bg-background px-4 pt-8 pb-8 sm:px-6 sm:pt-10 sm:pb-10 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           className="max-w-4xl"

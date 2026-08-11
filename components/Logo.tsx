@@ -11,6 +11,9 @@ type LogoProps = {
   href?: string | null;
   /** Lance l'animation du check (défaut: true sur lg, false sinon) */
   animate?: boolean;
+  /** Fond sombre (footer) : wordmark lisible */
+  tone?: "default" | "onDark";
+  orientation?: "stacked" | "horizontal";
 };
 
 const sizes = {
@@ -20,6 +23,7 @@ const sizes = {
     word: "h-3.5 w-auto sm:h-4",
     wordWidth: 120,
     wordHeight: 18,
+    text: "text-base sm:text-lg",
   },
   md: {
     wrap: "gap-1.5",
@@ -27,6 +31,7 @@ const sizes = {
     word: "h-5 w-auto",
     wordWidth: 150,
     wordHeight: 22,
+    text: "text-xl",
   },
   lg: {
     wrap: "gap-3 sm:gap-4",
@@ -34,6 +39,7 @@ const sizes = {
     word: "h-7 w-auto sm:h-8 lg:h-9",
     wordWidth: 280,
     wordHeight: 36,
+    text: "text-4xl sm:text-5xl",
   },
 };
 
@@ -42,32 +48,49 @@ export function Logo({
   size = "md",
   href = "/",
   animate,
+  tone = "default",
+  orientation = "stacked",
 }: LogoProps) {
   const s = sizes[size];
   const shouldAnimate = animate ?? size === "lg";
+  const horizontal = orientation === "horizontal";
 
   const content = (
     <span
       className={cn(
-        "inline-flex flex-col items-center",
-        s.wrap,
+        "inline-flex",
+        horizontal ? "flex-row items-center gap-2.5" : "flex-col items-center",
+        !horizontal && s.wrap,
         className,
       )}
     >
       <LogoMark className={s.mark} animate={shouldAnimate} />
-      <Image
-        src="/logo-wordmark.png"
-        alt=""
-        width={s.wordWidth}
-        height={s.wordHeight}
-        className={cn(
-          "object-contain",
-          s.word,
-          shouldAnimate && "logo-wordmark-animate",
-        )}
-        priority={size === "lg" || size === "sm"}
-        aria-hidden
-      />
+      {tone === "onDark" ? (
+        <span
+          className={cn(
+            "font-extrabold tracking-[0.12em]",
+            s.text,
+            "bg-gradient-to-r from-[#9B8CFF] via-[#B07BFF] to-[#D14CFF] bg-clip-text text-transparent",
+          )}
+          aria-hidden
+        >
+          VALEADATA
+        </span>
+      ) : (
+        <Image
+          src="/logo-wordmark.png"
+          alt=""
+          width={s.wordWidth}
+          height={s.wordHeight}
+          className={cn(
+            "object-contain",
+            s.word,
+            shouldAnimate && "logo-wordmark-animate",
+          )}
+          priority={size === "lg" || size === "sm"}
+          aria-hidden
+        />
+      )}
       <span className="sr-only">Valeadata</span>
     </span>
   );

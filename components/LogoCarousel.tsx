@@ -30,18 +30,18 @@ export function LogoCarousel({ className }: LogoCarouselProps) {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent sm:w-24" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent sm:w-24" />
 
-      <div className="logo-carousel-track flex w-max items-center gap-10 sm:gap-14">
+      <div className="logo-carousel-track flex w-max items-center gap-12 sm:gap-16 lg:gap-20">
         {track.map((logo, index) => (
           <div
             key={`${logo.alt}-${index}`}
-            className="flex h-14 w-[7.5rem] shrink-0 items-center justify-center sm:h-16 sm:w-36"
+            className="flex h-20 w-40 shrink-0 items-center justify-center sm:h-24 sm:w-48 lg:h-28 lg:w-56"
           >
             <Image
               src={logo.src}
               alt={logo.alt}
-              width={144}
-              height={64}
-              className="max-h-10 w-auto max-w-full object-contain opacity-90 transition-opacity duration-300 hover:opacity-100 sm:max-h-12"
+              width={224}
+              height={112}
+              className="max-h-14 w-auto max-w-full object-contain opacity-90 transition-opacity duration-300 hover:opacity-100 sm:max-h-16 lg:max-h-20"
               unoptimized={logo.src.endsWith(".svg") || logo.src.endsWith(".avif")}
             />
           </div>
