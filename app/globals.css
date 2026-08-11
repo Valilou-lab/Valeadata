@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafaff;
+  --foreground: #090a14;
+  --violet: #8a6bff;
+  --violet-light: #f4f1ff;
+  --violet-soft: #ebe6ff;
+  --surface: #ffffff;
+  --muted: #5c6178;
+  --border: #e6e4f0;
+  --dark: #090a13;
+  --dark-card: #14151f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-violet: var(--violet);
+  --color-violet-light: var(--violet-light);
+  --color-violet-soft: var(--violet-soft);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-dark: var(--dark);
+  --color-dark-card: var(--dark-card);
+  --font-sans: var(--font-plus-jakarta);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+.grid-texture {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 80% 0%, rgba(138, 107, 255, 0.12), transparent 55%),
+    linear-gradient(rgba(138, 107, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 107, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
+}
+
+.dot-texture {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 80% 0%, rgba(138, 107, 255, 0.12), transparent 55%),
+    radial-gradient(rgba(138, 107, 255, 0.18) 1px, transparent 1px);
+  background-size: auto, 22px 22px;
+}
+
+/* Logo — animation check + cercle */
+.logo-circle-animate {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: logo-circle-draw 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.logo-check-animate {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: logo-check-fill 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+}
+
+.logo-wordmark-animate {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: logo-wordmark-in 0.55s ease-out 1.05s forwards;
+}
+
+@keyframes logo-circle-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes logo-check-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes logo-wordmark-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Carrousel logos sources */
+.logo-carousel-track {
+  animation: logo-marquee 35s linear infinite;
+}
+
+.logo-carousel:hover .logo-carousel-track {
+  animation-play-state: paused;
+}
+
+@keyframes logo-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-circle-animate,
+  .logo-check-animate,
+  .logo-wordmark-animate {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: none;
+  }
+
+  .logo-carousel-track {
+    animation: none;
+  }
+}
