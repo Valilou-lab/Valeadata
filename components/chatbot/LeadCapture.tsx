@@ -106,7 +106,7 @@ export function LeadCapture({
         className="mt-4 w-full"
         iconRight={<ArrowRight className="h-4 w-4" />}
       >
-        Être rappelé
+        Envoyer
       </PrimaryButton>
     </form>
   );

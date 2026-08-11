@@ -112,7 +112,7 @@ export function ContactForm({ className }: { className?: string }) {
       </label>
 
       <PrimaryButton type="submit" size="lg" className="mt-6 w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
-        Être rappelé
+        Envoyer
       </PrimaryButton>
 
       <p className="mt-4 text-center text-xs leading-relaxed text-muted">
