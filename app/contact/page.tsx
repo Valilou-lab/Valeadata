@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { Clock3, Mail, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
+import { isContactRequest } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Parlez à un conseiller Valeadata de votre acquisition de leads. Email, téléphone, WhatsApp — réponse rapide 24h/24.",
+    "Parlez-nous de votre projet : accompagnement acquisition ou achat de leads qualifiés.",
 };
 
 const contactItems: Array<{
@@ -34,7 +35,15 @@ const contactItems: Array<{
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ demande?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const rawDemande = Array.isArray(params.demande) ? params.demande[0] : params.demande;
+  const initialDemande = isContactRequest(rawDemande) ? rawDemande : undefined;
+
   return (
     <main className="bg-background">
       <section className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-24">
@@ -43,13 +52,11 @@ export default function ContactPage() {
             CONTACT
           </p>
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-balance sm:text-5xl lg:text-[3.25rem] lg:leading-[1.12]">
-            Parlons de votre
-            <br />
-            <span className="text-violet">acquisition.</span>
+            Parlons de votre projet.
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted sm:text-lg">
-            Décrivez-nous votre besoin, un conseiller vous recontacte
-            rapidement.
+            Quelques informations suffisent pour commencer. Nous reviendrons
+            vers vous pour échanger sur vos besoins.
           </p>
 
           <ul className="mt-10 space-y-5">
@@ -86,7 +93,7 @@ export default function ContactPage() {
           </ul>
         </div>
 
-        <ContactForm />
+        <ContactForm initialDemande={initialDemande} />
       </section>
     </main>
   );

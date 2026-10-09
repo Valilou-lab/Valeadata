@@ -3,173 +3,299 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { contactRequests, type ContactRequest } from "@/lib/contact";
 import { cn } from "@/lib/cn";
 
 type FormState = {
   nom: string;
-  societe: string;
-  telephone: string;
   email: string;
-  besoin: string;
+  entreprise: string;
+  demande: ContactRequest | "";
+  projet: string;
+  website: string;
 };
 
-const initialState: FormState = {
-  nom: "",
-  societe: "",
-  telephone: "",
-  email: "",
-  besoin: "",
-};
+type FieldErrors = Partial<Record<"nom" | "email" | "entreprise" | "demande", string>>;
 
 const fieldClass =
-  "mt-1.5 w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted/60 focus:border-violet focus:ring-2 focus:ring-violet/20";
+  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted/70 focus:border-violet focus:ring-2 focus:ring-violet/20";
 
-function digitsOnly(value: string) {
-  return value.replace(/\D/g, "");
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validate(form: FormState): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!form.nom.trim()) errors.nom = "Indiquez votre nom.";
+  if (!emailPattern.test(form.email.trim())) {
+    errors.email = "Indiquez une adresse e-mail valide.";
+  }
+  if (!form.entreprise.trim()) errors.entreprise = "Indiquez le nom de votre entreprise.";
+  if (!form.demande) errors.demande = "Choisissez ce que vous recherchez.";
+  return errors;
 }
 
-function isValidPhone(value: string) {
-  return /^\d{10}$/.test(digitsOnly(value));
-}
-
-export function ContactForm({ className }: { className?: string }) {
-  const [form, setForm] = useState<FormState>(initialState);
-  const [status, setStatus] = useState<"idle" | "submitted">("idle");
-  const [phoneError, setPhoneError] = useState<string | null>(null);
+export function ContactForm({
+  className,
+  initialDemande,
+}: {
+  className?: string;
+  initialDemande?: ContactRequest;
+}) {
+  const [form, setForm] = useState<FormState>({
+    nom: "",
+    email: "",
+    entreprise: "",
+    demande: initialDemande ?? "",
+    projet: "",
+    website: "",
+  });
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [formError, setFormError] = useState<string | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (key in errors) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
   }
 
-  function handlePhoneChange(value: string) {
-    const next = digitsOnly(value).slice(0, 10);
-    update("telephone", next);
-    if (phoneError && isValidPhone(next)) setPhoneError(null);
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
 
-    if (!isValidPhone(form.telephone)) {
-      setPhoneError("Le téléphone doit contenir exactement 10 chiffres.");
+    const nextErrors = validate(form);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setStatus("idle");
       return;
     }
 
-    setPhoneError(null);
-    // Ready for API / webhook wiring later
-    console.info("[contact-form]", form);
-    setStatus("submitted");
-    setForm(initialState);
+    setStatus("sending");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nom: form.nom,
+          email: form.email,
+          entreprise: form.entreprise,
+          demande: form.demande,
+          projet: form.projet,
+          website: form.website,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        setStatus("error");
+        setFormError(
+          payload?.error ??
+            "L'envoi n'a pas abouti. Réessayez dans un instant, ou écrivez-nous à contact@valeadata.com.",
+        );
+        return;
+      }
+
+      setStatus("success");
+    } catch {
+      setStatus("error");
+      setFormError(
+        "L'envoi n'a pas abouti. Réessayez dans un instant, ou écrivez-nous à contact@valeadata.com.",
+      );
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div
+        className={cn(
+          "rounded-[2rem] border border-border bg-white p-6 sm:p-8",
+          className,
+        )}
+        role="status"
+      >
+        <h2 className="text-2xl font-extrabold tracking-tight">Demande envoyée.</h2>
+        <p className="mt-3 text-base leading-relaxed text-muted">
+          Merci. Nous revenons vers vous pour échanger sur votre projet.
+        </p>
+      </div>
+    );
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn(
-        "rounded-[2rem] border border-border bg-white p-6 shadow-[0_20px_60px_-40px_rgba(9,10,20,0.35)] sm:p-8",
-        className,
-      )}
+      className={cn("relative rounded-[2rem] border border-border bg-white p-6 sm:p-8", className)}
       noValidate
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-          Nom
+      <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label>
+          Site web
           <input
-            required
-            name="nom"
-            autoComplete="name"
-            value={form.nom}
-            onChange={(e) => update("nom", e.target.value)}
-            className={fieldClass}
-          />
-        </label>
-        <label className="block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-          Société
-          <input
-            required
-            name="societe"
-            autoComplete="organization"
-            value={form.societe}
-            onChange={(e) => update("societe", e.target.value)}
-            className={fieldClass}
-          />
-        </label>
-        <label className="block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-          Téléphone
-          <input
-            required
-            name="telephone"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel"
-            pattern="[0-9]{10}"
-            maxLength={10}
-            minLength={10}
-            placeholder="06XXXXXXXX"
-            value={form.telephone}
-            onChange={(e) => handlePhoneChange(e.target.value)}
-            aria-invalid={phoneError ? true : undefined}
-            aria-describedby={phoneError ? "telephone-error" : undefined}
-            className={cn(
-              fieldClass,
-              phoneError && "border-red-400 focus:border-red-400 focus:ring-red-200",
-            )}
-          />
-          {phoneError ? (
-            <span
-              id="telephone-error"
-              className="mt-1.5 block text-[11px] font-medium normal-case tracking-normal text-red-600"
-              role="alert"
-            >
-              {phoneError}
-            </span>
-          ) : (
-            <span className="mt-1.5 block text-[11px] font-medium normal-case tracking-normal text-muted">
-              10 chiffres obligatoires
-            </span>
-          )}
-        </label>
-        <label className="block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-          Email
-          <input
-            required
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={(e) => update("email", e.target.value)}
-            className={fieldClass}
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={form.website}
+            onChange={(event) => update("website", event.target.value)}
           />
         </label>
       </div>
 
-      <label className="mt-4 block text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-        Besoin
-        <textarea
-          required
-          name="besoin"
-          rows={4}
-          placeholder="Secteur, volumes, zones, échéance…"
-          value={form.besoin}
-          onChange={(e) => update("besoin", e.target.value)}
-          className={cn(fieldClass, "resize-y min-h-[120px]")}
-        />
-      </label>
+      <div className="space-y-5">
+        <div>
+          <label htmlFor="nom" className="block text-sm font-semibold text-foreground">
+            Votre nom
+          </label>
+          <input
+            id="nom"
+            name="nom"
+            required
+            autoComplete="name"
+            placeholder="Prénom et nom"
+            value={form.nom}
+            aria-invalid={errors.nom ? true : undefined}
+            aria-describedby={errors.nom ? "nom-error" : undefined}
+            onChange={(event) => update("nom", event.target.value)}
+            className={cn(fieldClass, errors.nom && "border-red-400 focus:border-red-400 focus:ring-red-200")}
+          />
+          {errors.nom ? (
+            <p id="nom-error" className="mt-1.5 text-sm text-red-600" role="alert">
+              {errors.nom}
+            </p>
+          ) : null}
+        </div>
 
-      <PrimaryButton type="submit" size="lg" className="mt-6 w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
-        Envoyer
-      </PrimaryButton>
+        <div>
+          <label htmlFor="email" className="block text-sm font-semibold text-foreground">
+            Votre adresse e-mail professionnelle
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            placeholder="vous@entreprise.fr"
+            value={form.email}
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? "email-error" : undefined}
+            onChange={(event) => update("email", event.target.value)}
+            className={cn(fieldClass, errors.email && "border-red-400 focus:border-red-400 focus:ring-red-200")}
+          />
+          {errors.email ? (
+            <p id="email-error" className="mt-1.5 text-sm text-red-600" role="alert">
+              {errors.email}
+            </p>
+          ) : null}
+        </div>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-muted">
-        En envoyant ce formulaire, vous acceptez d&apos;être recontacté par un
-        conseiller Valeadata.
-      </p>
+        <div>
+          <label htmlFor="entreprise" className="block text-sm font-semibold text-foreground">
+            Nom de votre entreprise
+          </label>
+          <input
+            id="entreprise"
+            name="entreprise"
+            required
+            autoComplete="organization"
+            placeholder="Votre entreprise"
+            value={form.entreprise}
+            aria-invalid={errors.entreprise ? true : undefined}
+            aria-describedby={errors.entreprise ? "entreprise-error" : undefined}
+            onChange={(event) => update("entreprise", event.target.value)}
+            className={cn(
+              fieldClass,
+              errors.entreprise && "border-red-400 focus:border-red-400 focus:ring-red-200",
+            )}
+          />
+          {errors.entreprise ? (
+            <p id="entreprise-error" className="mt-1.5 text-sm text-red-600" role="alert">
+              {errors.entreprise}
+            </p>
+          ) : null}
+        </div>
 
-      {status === "submitted" ? (
-        <p className="mt-3 rounded-2xl bg-violet-light px-4 py-3 text-center text-sm font-medium text-violet" role="status">
-          Merci — un conseiller vous rappellera rapidement.
+        <fieldset
+          aria-invalid={errors.demande ? true : undefined}
+          aria-describedby={errors.demande ? "demande-error" : undefined}
+        >
+          <legend className="text-sm font-semibold text-foreground">Que recherchez-vous ?</legend>
+          <div className="mt-2 grid gap-3">
+            {(Object.keys(contactRequests) as ContactRequest[]).map((key) => {
+              const selected = form.demande === key;
+              return (
+                <label
+                  key={key}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-snug transition-colors",
+                    selected
+                      ? "border-violet bg-violet-light"
+                      : "border-border bg-white hover:border-violet/40",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="demande"
+                    value={key}
+                    required
+                    checked={selected}
+                    onChange={() => update("demande", key)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-violet"
+                  />
+                  <span>{contactRequests[key]}</span>
+                </label>
+              );
+            })}
+          </div>
+          {errors.demande ? (
+            <p id="demande-error" className="mt-1.5 text-sm text-red-600" role="alert">
+              {errors.demande}
+            </p>
+          ) : null}
+        </fieldset>
+
+        <div>
+          <label htmlFor="projet" className="block text-sm font-semibold text-foreground">
+            Dites-nous en plus sur votre projet{" "}
+            <span className="font-normal text-muted">— facultatif</span>
+          </label>
+          <textarea
+            id="projet"
+            name="projet"
+            rows={4}
+            placeholder="Votre activité, vos objectifs, vos besoins… Quelques lignes suffisent !"
+            value={form.projet}
+            onChange={(event) => update("projet", event.target.value)}
+            className={cn(fieldClass, "min-h-[120px] resize-y")}
+          />
+        </div>
+      </div>
+
+      {formError ? (
+        <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+          {formError}
         </p>
       ) : null}
+
+      <PrimaryButton
+        type="submit"
+        size="lg"
+        className="mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={status === "sending"}
+        iconRight={<ArrowRight className="h-4 w-4" aria-hidden />}
+      >
+        {status === "sending" ? "Envoi en cours…" : "Envoyer ma demande"}
+      </PrimaryButton>
+
+      <p className="mt-4 text-xs leading-relaxed text-muted">
+        Les informations envoyées sont utilisées uniquement pour répondre à votre
+        demande.{" "}
+        <a href="/politique-confidentialite" className="font-semibold text-violet underline-offset-2 hover:underline">
+          Politique de confidentialité
+        </a>.
+      </p>
     </form>
   );
 }

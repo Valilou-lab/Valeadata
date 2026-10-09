@@ -1,21 +1,21 @@
-import { ChatbotPromo } from "@/components/sections/ChatbotPromo";
-import { Commitments } from "@/components/sections/Commitments";
-import { Expertise } from "@/components/sections/Expertise";
+import { AcquisitionScope } from "@/components/sections/AcquisitionScope";
+import { CostTransition } from "@/components/sections/CostTransition";
+import { FinalCta } from "@/components/sections/FinalCta";
+import { GeneratedOutcomes } from "@/components/sections/GeneratedOutcomes";
 import { Hero } from "@/components/sections/Hero";
-import { Methodology } from "@/components/sections/Methodology";
-import { SourcesCarousel } from "@/components/sections/SourcesCarousel";
-import { Technology } from "@/components/sections/Technology";
+import { PricingModels } from "@/components/sections/PricingModels";
+import { SolutionPaths } from "@/components/sections/SolutionPaths";
 
 export default function HomePage() {
   return (
     <main>
       <Hero />
-      <Commitments />
-      <SourcesCarousel />
-      <Technology />
-      <Expertise />
-      <ChatbotPromo />
-      <Methodology />
+      <SolutionPaths />
+      <GeneratedOutcomes />
+      <AcquisitionScope />
+      <CostTransition />
+      <PricingModels />
+      <FinalCta />
     </main>
   );
 }

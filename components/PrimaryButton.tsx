@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 type ButtonVariant = "primary" | "secondary" | "white" | "ghost";
@@ -31,11 +31,20 @@ type Common = {
   iconRight?: ReactNode;
 };
 
-type AsLink = Common & { href: string };
+type LinkExtras = Pick<AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel">;
+
+type AsLink = Common & LinkExtras & { href: string };
 type AsButton = Common &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof Common> & {
     href?: never;
   };
+
+type LinkRest = LinkExtras & { href: string };
+type ButtonRest = Omit<AsButton, keyof Common>;
+
+function isLinkRest(props: LinkRest | ButtonRest): props is LinkRest {
+  return "href" in props && typeof props.href === "string";
+}
 
 export function PrimaryButton({
   children,
@@ -55,15 +64,27 @@ export function PrimaryButton({
     </>
   );
 
-  if ("href" in props && typeof props.href === "string") {
+  if (isLinkRest(props)) {
+    const { href, target, rel } = props;
+    const resolvedRel = target === "_blank" ? (rel ?? "noopener noreferrer") : rel;
+    const isExternal = href.startsWith("http://") || href.startsWith("https://");
+
+    if (isExternal) {
+      return (
+        <a href={href} className={classes} target={target} rel={resolvedRel}>
+          {content}
+        </a>
+      );
+    }
+
     return (
-      <Link href={props.href} className={classes}>
+      <Link href={href} className={classes} target={target} rel={resolvedRel}>
         {content}
       </Link>
     );
   }
 
-  const buttonProps = props as Omit<AsButton, keyof Common>;
+  const buttonProps = props as ButtonRest;
 
   return (
     <button type={buttonProps.type ?? "button"} className={classes} {...buttonProps}>

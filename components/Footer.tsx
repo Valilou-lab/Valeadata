@@ -37,11 +37,11 @@ export function Footer() {
         <div>
           <Logo size="sm" tone="onDark" orientation="horizontal" />
           <p className="mt-5 text-sm font-semibold text-white">
-            Acquisition, data & intelligence conversationnelle.
+            Acquisition clients & croissance digitale.
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/55">
-            Des campagnes pensées autour de votre réalité commerciale, de
-            l&apos;acquisition à la conversion.
+            Lead generation et e-commerce : nous construisons le dispositif
+            d&apos;acquisition selon votre objectif.
           </p>
           <div className="mt-5 flex items-center gap-3">
             <a

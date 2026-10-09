@@ -14,11 +14,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Valeadata | Acquisition de leads & Data Automation",
+    default: "Valeadata | Acquisition clients & croissance digitale",
     template: "%s | Valeadata",
   },
   description:
-    "Valeadata accompagne les entreprises dans leur acquisition de prospects qualifiés grâce au Double Opt-In, à l'automatisation et à l'intelligence artificielle.",
+    "Valeadata construit et pilote votre acquisition selon votre modèle : lead generation, e-commerce, marque blanche ou marque propre.",
 };
 
 export default function RootLayout({
