@@ -16,8 +16,8 @@ const advantages = [
 
 export function Hero() {
   return (
-    <section className="dot-texture relative overflow-hidden">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-20 xl:gap-16">
+    <section className="dot-texture relative flex min-h-[calc(100dvh-4.75rem)] flex-col overflow-hidden">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 content-center items-center gap-10 px-4 py-14 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-20 xl:gap-16">
         <div className="hero-fade-up flex flex-col items-center text-center lg:items-start lg:text-left">
           <p className="text-[10px] font-bold tracking-[0.12em] text-violet uppercase sm:text-xs sm:tracking-[0.16em]">
             Acquisition digitale · Performance · Transparence
