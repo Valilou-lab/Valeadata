@@ -26,7 +26,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/80 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto grid h-[4.75rem] max-w-6xl grid-cols-[2.5rem_1fr_2.5rem] items-center px-4 sm:px-6 md:flex md:justify-between md:gap-4 lg:px-8">
+      <div className="mx-auto grid h-[4.75rem] max-w-6xl grid-cols-[2.5rem_1fr_2.5rem] items-center px-4 sm:px-6 md:flex md:justify-between md:gap-4 lg:max-w-7xl lg:px-8">
         <span className="md:hidden" aria-hidden />
         <div className="flex justify-center md:justify-start">
           <Logo size="sm" />

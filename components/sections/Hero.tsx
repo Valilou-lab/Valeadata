@@ -17,7 +17,7 @@ const advantages = [
 export function Hero() {
   return (
     <section className="dot-texture relative flex min-h-[calc(100dvh-4.75rem)] flex-col overflow-hidden">
-      <div className="mx-auto grid w-full max-w-6xl flex-1 content-center items-center gap-10 px-4 py-14 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-20 xl:gap-16">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 content-center items-center gap-10 px-4 py-14 sm:gap-12 sm:px-6 sm:py-16 lg:max-w-7xl lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-16 xl:grid-cols-[minmax(0,1.22fr)_minmax(0,0.88fr)] xl:gap-16">
         <div className="hero-fade-up flex flex-col items-center text-center lg:items-start lg:text-left">
           <p className="text-[10px] font-bold tracking-[0.12em] text-violet uppercase sm:text-xs sm:tracking-[0.16em]">
             Acquisition digitale · Performance · Transparence
@@ -34,7 +34,7 @@ export function Hero() {
             ))}
           </ul>
 
-          <h1 className="mt-5 text-[1.35rem] font-extrabold leading-[1.15] tracking-tight sm:text-[2rem] md:text-[2.25rem] lg:text-[1.65rem] lg:leading-[1.12] xl:text-[2.05rem]">
+          <h1 className="mt-5 w-full text-[1.35rem] font-extrabold leading-[1.12] tracking-tight sm:text-[2rem] md:text-[2.25rem] lg:text-[1.9rem] lg:leading-[1.1] xl:text-[2.6rem]">
             Des clics, c&apos;est bien.
             <br />
             Des prospects, c&apos;est mieux.
@@ -42,7 +42,7 @@ export function Hero() {
             <span className="text-violet">Les résultats, c&apos;est notre métier</span>
           </h1>
 
-          <p className="mt-6 w-full max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+          <p className="mt-6 w-full text-base leading-relaxed text-muted sm:text-lg xl:text-xl">
             Fini les campagnes qui tournent dans leur coin. Chez VALEADATA, nous
             réunissons stratégie, outils et expertise pour piloter votre
             acquisition ensemble, en toute transparence. Du premier clic
