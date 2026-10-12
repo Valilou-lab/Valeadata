@@ -285,24 +285,6 @@ body {
   }
 }
 
-/* Chat — points "Leo écrit" pendant le délai typewriter */
-.chat-typing-dot {
-  animation: chat-typing-bounce 1s ease-in-out infinite;
-}
-
-@keyframes chat-typing-bounce {
-  0%,
-  80%,
-  100% {
-    opacity: 0.35;
-    transform: translateY(0);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
-
 /* Hero — entrée légère du cockpit */
 .hero-fade-up {
   animation: hero-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -344,7 +326,6 @@ body {
   .method-cursor,
   .method-submit,
   .method-lead-card,
-  .chat-typing-dot,
   .hero-fade-up {
     animation: none !important;
     opacity: 1 !important;
