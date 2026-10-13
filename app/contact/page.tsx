@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Clock3, Mail, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
@@ -34,6 +35,24 @@ const contactItems: Array<{
     icon: Clock3,
   },
 ];
+
+const team = [
+  {
+    name: "Valentine Damame",
+    role: "Fondatrice · Directrice Commerciale",
+    src: "/images/equipe/valentine.png",
+  },
+  {
+    name: "Romain Fiore",
+    role: "Directeur Acquisition Digitale",
+    src: "/images/equipe/romain.png",
+  },
+  {
+    name: "Paul Damame",
+    role: "Community Manager & Influence",
+    src: "/images/equipe/paul.png",
+  },
+] as const;
 
 export default async function ContactPage({
   searchParams,
@@ -91,6 +110,45 @@ export default async function ContactPage({
               </li>
             ))}
           </ul>
+
+          <div className="mt-12 max-w-md border-t border-border pt-10">
+            <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+              Une équipe, trois expertises.
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted sm:text-[15px]">
+              De l&apos;acquisition à la conversion, chaque levier est piloté en
+              interne.
+            </p>
+
+            <ul className="mt-6 space-y-3">
+              {team.map((person) => (
+                <li key={person.name}>
+                  <div className="group flex items-center gap-4 rounded-2xl py-1.5 pr-2 transition duration-200 hover:-translate-y-0.5">
+                    <Image
+                      src={person.src}
+                      alt={`Portrait de ${person.name}`}
+                      width={320}
+                      height={320}
+                      className="h-16 w-16 shrink-0 rounded-full object-cover ring-1 ring-violet/15 transition duration-200 group-hover:shadow-[0_0_0_4px_rgba(138,107,255,0.14),0_12px_24px_-16px_rgba(138,107,255,0.85)] lg:h-[5.25rem] lg:w-[5.25rem]"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-bold tracking-tight text-foreground">
+                        {person.name}
+                      </p>
+                      <p className="mt-0.5 text-sm leading-snug text-muted">
+                        {person.role}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-6 text-sm leading-relaxed text-muted">
+              Équipe à taille humaine, des échanges directs, pas
+              d&apos;intermédiaires.
+            </p>
+          </div>
         </div>
 
         <ContactForm initialDemande={initialDemande} />
